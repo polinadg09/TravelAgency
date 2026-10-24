@@ -152,32 +152,3 @@ TravelAgency/
     └── TravelAgency.Service/            Web API, конфигурация, appsettings
 ```
 
-## Как запустить
-
-1. Установить .NET 10 SDK и PostgreSQL, один раз поставить инструмент миграций:
-
-   ```
-   dotnet tool install --global dotnet-ef
-   ```
-
-2. Записать строку подключения в user secrets (пароль в репозиторий не попадает):
-
-   ```
-   dotnet user-secrets set "ConnectionStrings:TravelAgencyDbContext" "Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ" --project Systems/TravelAgency.Service
-   ```
-
-3. Создать миграцию (из папки решения):
-
-   ```
-   dotnet ef migrations add InitialCreate --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
-   ```
-
-4. Применить миграцию. Либо командой:
-
-   ```
-   dotnet ef database update --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
-   ```
-
-   либо просто запустить `TravelAgency.Service` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
-
-После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.
