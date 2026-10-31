@@ -130,36 +130,37 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями. Хэш пароля (`PasswordHash`) тоже добавится позже, вместе с аутентификацией.
 
-- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain` (папка `Entities/`). Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
-- Настройки каждой сущности вынесены в отдельный класс в папке `Data/Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
+- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain`. Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
+- Настройки каждой сущности вынесены в отдельный класс в папке `Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
 - Связь «многие ко многим» между туристом и туром раскрыта сущностью `Booking` с составным первичным ключом (`TouristId`, `TourId`).
 - Роль пользователя, статус бронирования и категория отеля — `enum`.
-- Пароль от БД в репозитории не хранится: в `appsettings.json` строка подключения без пароля, а пароль лежит в user secrets.
-- Миграция создаётся средствами EF Core и применяется при старте сервиса (`Database.Migrate()`) или командой `dotnet ef database update`.
+- Миграция создаётся средствами EF Core и применяется командой `dotnet ef database update`.
 
 ## Структура решения
 
+Решение состоит из трёх проектов, внутри каждого — свои папки:
+
 ```
-TravelAgency/
-├── TravelAgency.sln
-├── README.md
-├── docs/
-│   └── er-logical.png
-├── TravelAgency.Domain/                 проект: сущности
-│   ├── Entities/                        *Entity
-│   │   └── Base/                        IBaseEntity, BaseEntity
+TravelAgency.sln
+├── TravelAgency.Domain                  сущности
+│   ├── Entities/
+│   │   ├── Base/                        IBaseEntity, BaseEntity
+│   │   └── ...Entity.cs                 User, Tourist, Location, Tour, Booking
 │   └── Enums/                           UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
-├── TravelAgency.Infrastructure/         проект: БД
-│   └── Data/
-│       ├── TravelAgencyDbContext.cs
-│       ├── Configurations/              настройки сущностей
-│       └── Migrations/                  миграции EF Core
-└── TravelAgency.Web/                    проект: Web API
-    ├── Configuration/                   подключение БД и др.
+├── TravelAgency.Infrastructure          работа с БД
+│   ├── Data/
+│   │   ├── Configurations/              настройки сущностей
+│   │   └── TravelAgencyDbContext.cs
+│   └── Migrations/                      миграции EF Core
+└── TravelAgency.Web                     Web API
+    ├── Configuration/                   подключение БД
     ├── Properties/
     ├── appsettings.json
+    ├── appsettings.Development.json
     └── Program.cs
 ```
+
+Зависимости проектов: `Web` → `Infrastructure` → `Domain`.
 
 ## Как запустить
 
@@ -169,24 +170,26 @@ TravelAgency/
    dotnet tool install --global dotnet-ef
    ```
 
-2. Записать строку подключения с паролем в user secrets (из папки решения, в PowerShell):
+2. В `TravelAgency.Web/appsettings.Development.json` указать строку подключения с паролем от своей PostgreSQL (в `appsettings.json` пароля нет). Если в пароле есть обратная косая черта `\`, в JSON её нужно писать дважды (`\\`):
 
-   ```
-   dotnet user-secrets set 'ConnectionStrings:TravelAgencyDbContext' 'Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ' --project TravelAgency.Web
+   ```json
+   {
+     "ConnectionStrings": {
+       "TravelAgencyDbContext": "Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ"
+     }
+   }
    ```
 
-3. Создать миграцию:
+3. Создать миграцию (из папки решения):
 
    ```
    dotnet ef migrations add InitialCreate --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
    ```
 
-4. Применить миграцию. Либо командой:
+4. Применить миграцию (база `travel_agency` создастся, если её ещё нет):
 
    ```
    dotnet ef database update --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
    ```
-
-   либо просто запустить `TravelAgency.Web` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
 
 После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.
