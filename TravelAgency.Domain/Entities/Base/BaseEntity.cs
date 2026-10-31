@@ -8,7 +8,7 @@ public class BaseEntity : IBaseEntity
     [Key]
     public int Id { get; set; }
 
-    /// <summary>Публичный идентификатор </summary>
+  
     public Guid ExternalId { get; set; } = Guid.NewGuid();
 
     public DateTime CreationTime { get; set; } = DateTime.UtcNow;
