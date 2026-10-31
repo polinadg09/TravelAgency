@@ -128,14 +128,14 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 ## Что реализовано
 
-В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями.
+В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями. Хэш пароля (`PasswordHash`) тоже добавится позже, вместе с аутентификацией.
 
-- Сущности описаны классами (`*Entity`) в проекте `TravelAgency.Context.Entities`, настройки полей и связей заданы через Fluent API в `TravelAgencyDbContext`.
+- Сущности описаны классами `*Entity` в проекте `TravelAgency.Context.Entities`. Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
+- Настройки каждой сущности вынесены в отдельный класс в папке `Configurations/` проекта `TravelAgency.Context`, `TravelAgencyDbContext` их подключает.
 - Связь «многие ко многим» между туристом и туром раскрыта сущностью `Booking` с составным первичным ключом (`TouristId`, `TourId`).
-- Роль пользователя, статус бронирования и категория отеля — `enum`, в БД хранятся строками.
-- Профиль `Tourist` может быть у любого пользователя (связь 1 : 0..1), поэтому менеджер может бронировать тур для себя.
-- Для PostgreSQL все колонки именуются в snake_case (`phone_number`).
-- Миграция создаётся средствами EF Core и применяется при старте сервиса (`Database.Migrate()`).
+- Роль пользователя, статус бронирования и категория отеля — `enum`.
+- Пароль от БД в репозитории не хранится: в `appsettings.json` строка подключения без пароля, а пароль лежит в user secrets.
+- Миграция создаётся средствами EF Core и применяется при старте сервиса (`Database.Migrate()`) или командой `dotnet ef database update`.
 
 ## Структура решения
 
@@ -146,9 +146,44 @@ TravelAgency/
 ├── docs/
 │   └── er-logical.png
 ├── Data/
-│   ├── TravelAgency.Context.Entities/   сущности и enum
-│   └── TravelAgency.Context/            DbContext и миграции
+│   ├── TravelAgency.Context.Entities/   проект: сущности
+│   │   ├── Base/                        IBaseEntity, BaseEntity
+│   │   └── Enums/                       UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
+│   └── TravelAgency.Context/            проект: БД
+│       ├── Configurations/              настройки сущностей
+│       └── Migrations/                  миграции EF Core
 └── Systems/
-    └── TravelAgency.Service/            Web API, конфигурация, appsettings
+    └── TravelAgency.Service/            проект: Web API
+        ├── Configuration/               подключение БД и др.
+        └── Properties/
 ```
 
+## Как запустить
+
+1. Установить .NET 10 SDK и PostgreSQL, один раз поставить инструмент миграций:
+
+   ```
+   dotnet tool install --global dotnet-ef
+   ```
+
+2. Записать строку подключения с паролем в user secrets (из папки решения, в PowerShell):
+
+   ```
+   dotnet user-secrets set 'ConnectionStrings:TravelAgencyDbContext' 'Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ' --project Systems/TravelAgency.Service
+   ```
+
+3. Создать миграцию:
+
+   ```
+   dotnet ef migrations add InitialCreate --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
+   ```
+
+4. Применить миграцию. Либо командой:
+
+   ```
+   dotnet ef database update --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
+   ```
+
+   либо просто запустить `TravelAgency.Service` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
+
+После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.

@@ -24,87 +24,69 @@ namespace TravelAgency.Context.Migrations
 
             modelBuilder.Entity("TravelAgency.Context.Entities.BookingEntity", b =>
                 {
-                    b.Property<Guid>("TouristId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tourist_id");
+                    b.Property<int>("TouristId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("TourId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("tour_id");
+                    b.Property<int>("TourId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("BookingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("booking_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("NumberOfPeople")
-                        .HasColumnType("integer")
-                        .HasColumnName("number_of_people");
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("TouristId", "TourId");
 
-                    b.HasIndex("Status");
-
                     b.HasIndex("TourId");
 
-                    b.ToTable("bookings", null, t =>
-                        {
-                            t.HasCheckConstraint("chk_bookings_number_of_people", "number_of_people >= 1");
-                        });
+                    b.ToTable("bookings");
                 });
 
             modelBuilder.Entity("TravelAgency.Context.Entities.LocationEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("address");
+                        .HasColumnType("text");
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("category");
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("city");
+                        .HasColumnType("text");
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("country");
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ModificationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("name");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Country");
-
-                    b.HasIndex("Name", "Country", "City")
+                    b.HasIndex("ExternalId")
                         .IsUnique();
 
                     b.ToTable("locations");
@@ -112,85 +94,84 @@ namespace TravelAgency.Context.Migrations
 
             modelBuilder.Entity("TravelAgency.Context.Entities.TourEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AvailableSeats")
-                        .HasColumnType("integer")
-                        .HasColumnName("available_seats");
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                        .HasColumnType("text");
 
                     b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
-                        .HasColumnName("end_date");
+                        .HasColumnType("date");
 
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("location_id");
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ModificationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
-                        .HasColumnName("name");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Price")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("price");
+                        .HasColumnType("numeric");
 
                     b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date")
-                        .HasColumnName("start_date");
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("Price");
-
-                    b.HasIndex("Name", "StartDate")
+                    b.HasIndex("ExternalId")
                         .IsUnique();
 
-                    b.HasIndex("StartDate", "EndDate");
+                    b.HasIndex("LocationId");
 
-                    b.ToTable("tours", null, t =>
-                        {
-                            t.HasCheckConstraint("chk_tours_available_seats", "available_seats >= 0");
-
-                            t.HasCheckConstraint("chk_tours_dates", "end_date >= start_date");
-
-                            t.HasCheckConstraint("chk_tours_price", "price > 0");
-                        });
+                    b.ToTable("tours");
                 });
 
             modelBuilder.Entity("TravelAgency.Context.Entities.TouristEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateOnly>("Birthdate")
-                        .HasColumnType("date")
-                        .HasColumnName("birthdate");
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ModificationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PassportData")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("passport_data");
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
 
                     b.HasIndex("PassportData")
                         .IsUnique();
@@ -198,80 +179,63 @@ namespace TravelAgency.Context.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("tourists", null, t =>
-                        {
-                            t.HasCheckConstraint("chk_tourists_birthdate", "birthdate >= '1900-01-01' AND birthdate <= CURRENT_DATE");
-                        });
+                    b.ToTable("tourists");
                 });
 
             modelBuilder.Entity("TravelAgency.Context.Entities.UserEntity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("email");
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ExternalId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("login");
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ModificationTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("password_hash");
+                        .HasColumnType("text");
 
                     b.Property<string>("Patronymic")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("patronymic");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("phone_number");
+                        .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("role");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("surname");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
+
                     b.HasIndex("Login")
                         .IsUnique();
 
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique();
-
-                    b.ToTable("users", null, t =>
-                        {
-                            t.HasCheckConstraint("chk_users_login_len", "char_length(login) >= 3");
-                        });
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("TravelAgency.Context.Entities.BookingEntity", b =>
@@ -279,13 +243,13 @@ namespace TravelAgency.Context.Migrations
                     b.HasOne("TravelAgency.Context.Entities.TourEntity", "Tour")
                         .WithMany("Bookings")
                         .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TravelAgency.Context.Entities.TouristEntity", "Tourist")
                         .WithMany("Bookings")
                         .HasForeignKey("TouristId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Tour");
@@ -298,7 +262,7 @@ namespace TravelAgency.Context.Migrations
                     b.HasOne("TravelAgency.Context.Entities.LocationEntity", "Location")
                         .WithMany("Tours")
                         .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Location");

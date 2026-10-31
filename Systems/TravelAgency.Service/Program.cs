@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
 // Configure DB
+// Пароль в appsettings.json не хранится: он лежит в user secrets (см. README)
 var connectionString = builder.Configuration.GetConnectionString("TravelAgencyDbContext");
 
 services.AddDataBase(connectionString ?? "");
