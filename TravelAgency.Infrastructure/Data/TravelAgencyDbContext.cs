@@ -19,7 +19,7 @@ public class TravelAgencyDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // настройка каждой сущности вынесена в отдельный класс
+        // настройка каждой сущности в отдельном классе
         modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TouristEntityConfiguration());
         modelBuilder.ApplyConfiguration(new LocationEntityConfiguration());
