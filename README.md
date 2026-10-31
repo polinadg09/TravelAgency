@@ -2,8 +2,6 @@
 
 Веб-API на ASP.NET Core для просмотра и бронирования туров. Туристы бронируют туры, менеджеры ведут справочники и обрабатывают брони, администратор управляет менеджерами.
 
-**Стек:** C#, .NET 10, ASP.NET Core Web API, Entity Framework Core (Code First), PostgreSQL.
-
 ## Модель данных
 
 ![ER-диаграмма (логическая модель)](docs/er-logical.png)
@@ -118,11 +116,6 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 После MVP: обращения в поддержку, отзывы, онлайн-оплата, уведомления по email.
 
-## 7. Работа в Git
-
-В `main` напрямую не коммитим. Каждая задача идёт в отдельной ветке (`feature/auth`, `feature/tour-crud`, `feature/booking`, `feature/search-filters`), после завершения создаётся Merge Request в `main`. На ревью проверяем: код компилируется, в репозитории нет паролей и строк подключения, миграции применяются без ошибок.
-
----
 
 # ЛР2. Code First: инициализация базы данных
 
@@ -162,34 +155,3 @@ TravelAgency.sln
 
 Зависимости проектов: `Web` → `Infrastructure` → `Domain`.
 
-## Как запустить
-
-1. Установить .NET 10 SDK и PostgreSQL, один раз поставить инструмент миграций:
-
-   ```
-   dotnet tool install --global dotnet-ef
-   ```
-
-2. В `TravelAgency.Web/appsettings.Development.json` указать строку подключения с паролем от своей PostgreSQL (в `appsettings.json` пароля нет). Если в пароле есть обратная косая черта `\`, в JSON её нужно писать дважды (`\\`):
-
-   ```json
-   {
-     "ConnectionStrings": {
-       "TravelAgencyDbContext": "Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ"
-     }
-   }
-   ```
-
-3. Создать миграцию (из папки решения):
-
-   ```
-   dotnet ef migrations add InitialCreate --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
-   ```
-
-4. Применить миграцию (база `travel_agency` создастся, если её ещё нет):
-
-   ```
-   dotnet ef database update --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
-   ```
-
-После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.
