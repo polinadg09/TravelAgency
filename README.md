@@ -130,8 +130,8 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями. Хэш пароля (`PasswordHash`) тоже добавится позже, вместе с аутентификацией.
 
-- Сущности описаны классами `*Entity` в проекте `TravelAgency.Context.Entities`. Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
-- Настройки каждой сущности вынесены в отдельный класс в папке `Configurations/` проекта `TravelAgency.Context`, `TravelAgencyDbContext` их подключает.
+- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain` (папка `Entities/`). Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
+- Настройки каждой сущности вынесены в отдельный класс в папке `Data/Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
 - Связь «многие ко многим» между туристом и туром раскрыта сущностью `Booking` с составным первичным ключом (`TouristId`, `TourId`).
 - Роль пользователя, статус бронирования и категория отеля — `enum`.
 - Пароль от БД в репозитории не хранится: в `appsettings.json` строка подключения без пароля, а пароль лежит в user secrets.
@@ -145,17 +145,20 @@ TravelAgency/
 ├── README.md
 ├── docs/
 │   └── er-logical.png
-├── Data/
-│   ├── TravelAgency.Context.Entities/   проект: сущности
-│   │   ├── Base/                        IBaseEntity, BaseEntity
-│   │   └── Enums/                       UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
-│   └── TravelAgency.Context/            проект: БД
+├── TravelAgency.Domain/                 проект: сущности
+│   ├── Entities/                        *Entity
+│   │   └── Base/                        IBaseEntity, BaseEntity
+│   └── Enums/                           UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
+├── TravelAgency.Infrastructure/         проект: БД
+│   └── Data/
+│       ├── TravelAgencyDbContext.cs
 │       ├── Configurations/              настройки сущностей
 │       └── Migrations/                  миграции EF Core
-└── Systems/
-    └── TravelAgency.Service/            проект: Web API
-        ├── Configuration/               подключение БД и др.
-        └── Properties/
+└── TravelAgency.Web/                    проект: Web API
+    ├── Configuration/                   подключение БД и др.
+    ├── Properties/
+    ├── appsettings.json
+    └── Program.cs
 ```
 
 ## Как запустить
@@ -169,21 +172,21 @@ TravelAgency/
 2. Записать строку подключения с паролем в user secrets (из папки решения, в PowerShell):
 
    ```
-   dotnet user-secrets set 'ConnectionStrings:TravelAgencyDbContext' 'Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ' --project Systems/TravelAgency.Service
+   dotnet user-secrets set 'ConnectionStrings:TravelAgencyDbContext' 'Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ' --project TravelAgency.Web
    ```
 
 3. Создать миграцию:
 
    ```
-   dotnet ef migrations add InitialCreate --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
+   dotnet ef migrations add InitialCreate --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
    ```
 
 4. Применить миграцию. Либо командой:
 
    ```
-   dotnet ef database update --project Data/TravelAgency.Context --startup-project Systems/TravelAgency.Service -- --environment Development
+   dotnet ef database update --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
    ```
 
-   либо просто запустить `TravelAgency.Service` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
+   либо просто запустить `TravelAgency.Web` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
 
 После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.
