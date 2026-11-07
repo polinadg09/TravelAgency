@@ -12,10 +12,10 @@ public class BookingEntity
     public int NumberOfPeople { get; set; }
 
 
-    public int TouristId { get; set; }
+    public Guid TouristId { get; set; }
     public TouristEntity Tourist { get; set; } = null!;
 
 
-    public int TourId { get; set; }
+    public Guid TourId { get; set; }
     public TourEntity Tour { get; set; } = null!;
 }

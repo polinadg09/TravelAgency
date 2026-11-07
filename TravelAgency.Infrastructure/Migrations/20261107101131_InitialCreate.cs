@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,17 +15,11 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "locations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Country = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: true),
-                    Category = table.Column<int>(type: "integer", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    ExternalId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModificationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Category = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -37,18 +30,13 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Login = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Surname = table.Column<string>(type: "text", nullable: false),
-                    Patronymic = table.Column<string>(type: "text", nullable: true),
-                    ExternalId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModificationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Patronymic = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,18 +47,13 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "tours",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     EndDate = table.Column<DateOnly>(type: "date", nullable: false),
                     AvailableSeats = table.Column<int>(type: "integer", nullable: false),
-                    LocationId = table.Column<int>(type: "integer", nullable: false),
-                    ExternalId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModificationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    LocationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -87,14 +70,10 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "tourists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PassportData = table.Column<string>(type: "text", nullable: false),
                     Birthdate = table.Column<DateOnly>(type: "date", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    ExternalId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModificationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -111,8 +90,8 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "bookings",
                 columns: table => new
                 {
-                    TouristId = table.Column<int>(type: "integer", nullable: false),
-                    TourId = table.Column<int>(type: "integer", nullable: false),
+                    TouristId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     BookingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     NumberOfPeople = table.Column<int>(type: "integer", nullable: false)
@@ -140,18 +119,6 @@ namespace TravelAgency.Infrastructure.Migrations
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_locations_ExternalId",
-                table: "locations",
-                column: "ExternalId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_tourists_ExternalId",
-                table: "tourists",
-                column: "ExternalId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_tourists_PassportData",
                 table: "tourists",
                 column: "PassportData",
@@ -164,12 +131,6 @@ namespace TravelAgency.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_tours_ExternalId",
-                table: "tours",
-                column: "ExternalId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_tours_LocationId",
                 table: "tours",
                 column: "LocationId");
@@ -178,18 +139,6 @@ namespace TravelAgency.Infrastructure.Migrations
                 name: "IX_users_Email",
                 table: "users",
                 column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_users_ExternalId",
-                table: "users",
-                column: "ExternalId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_users_Login",
-                table: "users",
-                column: "Login",
                 unique: true);
         }
 

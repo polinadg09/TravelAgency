@@ -7,14 +7,13 @@ namespace TravelAgency.Domain.Entities;
 public class TourEntity : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
     public decimal Price { get; set; } 
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public int AvailableSeats { get; set; }
 
 
-    public int LocationId { get; set; }
+    public Guid LocationId { get; set; }
     public LocationEntity Location { get; set; } = null!;
 
 

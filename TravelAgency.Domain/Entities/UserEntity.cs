@@ -7,7 +7,7 @@ namespace TravelAgency.Domain.Entities;
 [Table("users")]
 public class UserEntity : BaseEntity
 {
-    public string Login { get; set; } = string.Empty;
+  
     public UserRoleEnum Role { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }

@@ -24,11 +24,11 @@ namespace TravelAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TravelAgency.Domain.Entities.BookingEntity", b =>
                 {
-                    b.Property<int>("TouristId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TouristId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("TourId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("BookingDate")
                         .HasColumnType("timestamp with time zone");
@@ -48,14 +48,9 @@ namespace TravelAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TravelAgency.Domain.Entities.LocationEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -68,58 +63,29 @@ namespace TravelAgency.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ModificationTime")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExternalId")
-                        .IsUnique();
-
                     b.ToTable("locations");
                 });
 
             modelBuilder.Entity("TravelAgency.Domain.Entities.TourEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AvailableSeats")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
-                    b.Property<Guid>("ExternalId")
+                    b.Property<Guid>("LocationId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("LocationId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ModificationTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -133,9 +99,6 @@ namespace TravelAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExternalId")
-                        .IsUnique();
-
                     b.HasIndex("LocationId");
 
                     b.ToTable("tours");
@@ -143,35 +106,21 @@ namespace TravelAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TravelAgency.Domain.Entities.TouristEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("Birthdate")
                         .HasColumnType("date");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ModificationTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PassportData")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ExternalId")
-                        .IsUnique();
 
                     b.HasIndex("PassportData")
                         .IsUnique();
@@ -184,28 +133,13 @@ namespace TravelAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TravelAgency.Domain.Entities.UserEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<Guid>("ExternalId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Login")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ModificationTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -227,12 +161,6 @@ namespace TravelAgency.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("ExternalId")
-                        .IsUnique();
-
-                    b.HasIndex("Login")
                         .IsUnique();
 
                     b.ToTable("users");

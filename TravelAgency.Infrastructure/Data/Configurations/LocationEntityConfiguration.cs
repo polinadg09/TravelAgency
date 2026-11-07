@@ -9,6 +9,5 @@ public class LocationEntityConfiguration : IEntityTypeConfiguration<LocationEnti
     public void Configure(EntityTypeBuilder<LocationEntity> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.HasIndex(x => x.ExternalId).IsUnique();
     }
 }

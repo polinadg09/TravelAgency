@@ -10,7 +10,7 @@ public class TouristEntity : BaseEntity
     public DateOnly Birthdate { get; set; }
 
 
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
     public UserEntity User { get; set; } = null!;
 
 
