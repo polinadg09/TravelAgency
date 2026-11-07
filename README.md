@@ -35,9 +35,9 @@
 
 **Турист:**
 
-1. Зарегистрироваться (логин, пароль, email, телефон, ФИО, паспортные данные, дата рождения) и войти в личный кабинет.
+1. Зарегистрироваться (email, пароль, телефон, ФИО, паспортные данные, дата рождения) и войти в личный кабинет.
 2. Искать и фильтровать туры: страна, город, цена, даты, звёздность отеля, туроператор.
-3. Открыть карточку тура: описание, даты, цена, свободные места, отель, туроператор.
+3. Открыть карточку тура: название, даты, цена, свободные места, отель, туроператор.
 4. Забронировать тур, указав количество человек.
 5. Посмотреть свои брони со статусами (в обработке, оплачено, отменено).
 6. Отменить бронь в статусе «в обработке» и забронировать тот же тур заново.
@@ -60,12 +60,12 @@
 
 | Сущность | Атрибуты |
 | --- | --- |
-| `User` | `Id` (PK), `Login` (уникальный), `PasswordHash`, `Role` (Tourist / Manager / Admin), `Email` (уникальный), `PhoneNumber`, `Name`, `Surname`, `Patronymic` (nullable) |
+| `User` | `Id` (PK), `PasswordHash`, `Role` (Tourist / Manager / Admin), `Email` (уникальный), `PhoneNumber`, `Name`, `Surname`, `Patronymic` (nullable) |
 | `Tourist` | `Id` (PK), `PassportData`, `Birthdate`, `UserId` (FK, уникальный) |
 | `Manager` | `Id` (PK), `Position`, `UserId` (FK, уникальный) |
 | `TourOperator` | `Id` (PK), `FullName`, `AbbreviatedName`, `Tin` (ИНН, 10 или 12 цифр), `PhoneNumber`, `Email`, `Notes`, `Website` |
-| `Location` | `Id` (PK), `Name`, `Country`, `City`, `Address`, `Category` (enum, звёзды 1–5), `Description` |
-| `Tour` | `Id` (PK), `Name`, `Description`, `TourOperatorId` (FK), `LocationId` (FK), `Price` (за человека), `StartDate`, `EndDate`, `AvailableSeats` |
+| `Location` | `Id` (PK), `Name`, `Country`, `City`, `Category` (enum, звёзды 1–5) |
+| `Tour` | `Id` (PK), `Name`, `TourOperatorId` (FK), `LocationId` (FK), `Price` (за человека), `StartDate`, `EndDate`, `AvailableSeats` |
 | `Booking` | PK (`TouristId`, `TourId`), `BookingDate`, `Status`, `NumberOfPeople`, `ManagerId` (FK, nullable) |
 
 ### 4.2. Связи
@@ -92,7 +92,7 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 2. При создании или возобновлении брони места уменьшаются на `NumberOfPeople`, при отмене возвращаются. Всё в одной транзакции.
 3. Турист сам отменяет только бронь в статусе `Pending`.
 4. Турист видит и меняет только свои данные и свои брони.
-5. Логин и email уникальны, пароль не короче 8 символов.
+5. Email уникален, пароль не короче 8 символов.
 6. `Price` > 0, `EndDate` не раньше `StartDate`, дата рождения не в будущем.
 7. Нельзя удалить туроператора или отель, на которых ссылаются туры, и тур с неотменёнными бронями.
 8. Доступ к действиям проверяется по роли на сервере, а не только скрытием кнопок.
@@ -123,7 +123,7 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями. Хэш пароля (`PasswordHash`) тоже добавится позже, вместе с аутентификацией.
 
-- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain`. Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
+- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain`. Идентификатор (`Guid Id`) наследуется от базового класса `BaseEntity`.
 - Настройки каждой сущности вынесены в отдельный класс в папке `Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
 - Связь «многие ко многим» между туристом и туром раскрыта сущностью `Booking` с составным первичным ключом (`TouristId`, `TourId`).
 - Роль пользователя, статус бронирования и категория отеля — `enum`.
@@ -137,7 +137,7 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 TravelAgency.sln
 ├── TravelAgency.Domain                  сущности
 │   ├── Entities/
-│   │   ├── Base/                        IBaseEntity, BaseEntity
+│   │   ├── Base/                        BaseEntity.
 │   │   └── ...Entity.cs                 User, Tourist, Location, Tour, Booking
 │   └── Enums/                           UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
 ├── TravelAgency.Infrastructure          работа с БД
@@ -149,7 +149,6 @@ TravelAgency.sln
     ├── Configuration/                   подключение БД
     ├── Properties/
     ├── appsettings.json
-    ├── appsettings.Development.json
     └── Program.cs
 ```
 
