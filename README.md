@@ -2,8 +2,6 @@
 
 Веб-API на ASP.NET Core для просмотра и бронирования туров. Туристы бронируют туры, менеджеры ведут справочники и обрабатывают брони, администратор управляет менеджерами.
 
-**Стек:** C#, .NET 10, ASP.NET Core Web API, Entity Framework Core (Code First), PostgreSQL.
-
 ## Модель данных
 
 ![ER-диаграмма (логическая модель)](docs/er-logical.png)
@@ -14,7 +12,7 @@
 
 ## 1. Безопасность паролей
 
-**Пароль не хранится в открытом виде, в БД лежит только хэш.** Хэш-функция необратима: для одних и тех же данных результат один и тот же. При регистрации пароль хэшируется и сохраняется в `PasswordHash`. При входе введённый пароль хэшируется тем же алгоритмом и сравнивается с хэшем в БД. Используем готовый алгоритм со «солью» (`PasswordHasher` из ASP.NET Core Identity или BCrypt), свой не пишем.
+**Пароль не хранится в открытом виде, в БД лежит только хэш.** Хэш-функция необратима: для одних и тех же данных результат один и тот же. При регистрации пароль хэшируется и сохраняется в `PasswordHash`. При входе введённый пароль хэшируется тем же алгоритмом и сравнивается с хэшем в БД.
 
 ## 2. Роли
 
@@ -37,9 +35,9 @@
 
 **Турист:**
 
-1. Зарегистрироваться (логин, пароль, email, телефон, ФИО, паспортные данные, дата рождения) и войти в личный кабинет.
+1. Зарегистрироваться (email, пароль, телефон, ФИО, паспортные данные, дата рождения) и войти в личный кабинет.
 2. Искать и фильтровать туры: страна, город, цена, даты, звёздность отеля, туроператор.
-3. Открыть карточку тура: описание, даты, цена, свободные места, отель, туроператор.
+3. Открыть карточку тура: название, даты, цена, свободные места, отель, туроператор.
 4. Забронировать тур, указав количество человек.
 5. Посмотреть свои брони со статусами (в обработке, оплачено, отменено).
 6. Отменить бронь в статусе «в обработке» и забронировать тот же тур заново.
@@ -62,12 +60,12 @@
 
 | Сущность | Атрибуты |
 | --- | --- |
-| `User` | `Id` (PK), `Login` (уникальный), `PasswordHash`, `Role` (Tourist / Manager / Admin), `Email` (уникальный), `PhoneNumber`, `Name`, `Surname`, `Patronymic` (nullable) |
+| `User` | `Id` (PK), `PasswordHash`, `Role` (Tourist / Manager / Admin), `Email` (уникальный), `PhoneNumber`, `Name`, `Surname`, `Patronymic` (nullable) |
 | `Tourist` | `Id` (PK), `PassportData`, `Birthdate`, `UserId` (FK, уникальный) |
 | `Manager` | `Id` (PK), `Position`, `UserId` (FK, уникальный) |
 | `TourOperator` | `Id` (PK), `FullName`, `AbbreviatedName`, `Tin` (ИНН, 10 или 12 цифр), `PhoneNumber`, `Email`, `Notes`, `Website` |
-| `Location` | `Id` (PK), `Name`, `Country`, `City`, `Address`, `Category` (enum, звёзды 1–5), `Description` |
-| `Tour` | `Id` (PK), `Name`, `Description`, `TourOperatorId` (FK), `LocationId` (FK), `Price` (за человека), `StartDate`, `EndDate`, `AvailableSeats` |
+| `Location` | `Id` (PK), `Name`, `Country`, `City`, `Category` (enum, звёзды 1–5) |
+| `Tour` | `Id` (PK), `Name`, `TourOperatorId` (FK), `LocationId` (FK), `Price` (за человека), `StartDate`, `EndDate`, `AvailableSeats` |
 | `Booking` | PK (`TouristId`, `TourId`), `BookingDate`, `Status`, `NumberOfPeople`, `ManagerId` (FK, nullable) |
 
 ### 4.2. Связи
@@ -94,7 +92,7 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 2. При создании или возобновлении брони места уменьшаются на `NumberOfPeople`, при отмене возвращаются. Всё в одной транзакции.
 3. Турист сам отменяет только бронь в статусе `Pending`.
 4. Турист видит и меняет только свои данные и свои брони.
-5. Логин и email уникальны, пароль не короче 8 символов.
+5. Email уникален, пароль не короче 8 символов.
 6. `Price` > 0, `EndDate` не раньше `StartDate`, дата рождения не в будущем.
 7. Нельзя удалить туроператора или отель, на которых ссылаются туры, и тур с неотменёнными бронями.
 8. Доступ к действиям проверяется по роли на сервере, а не только скрытием кнопок.
@@ -118,11 +116,6 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 После MVP: обращения в поддержку, отзывы, онлайн-оплата, уведомления по email.
 
-## 7. Работа в Git
-
-В `main` напрямую не коммитим. Каждая задача идёт в отдельной ветке (`feature/auth`, `feature/tour-crud`, `feature/booking`, `feature/search-filters`), после завершения создаётся Merge Request в `main`. На ревью проверяем: код компилируется, в репозитории нет паролей и строк подключения, миграции применяются без ошибок.
-
----
 
 # ЛР2. Code First: инициализация базы данных
 
@@ -130,63 +123,34 @@ Tourist и Tour связаны как M : N через Booking, поэтому �
 
 В базе данных реализованы **5 из 7 сущностей**: `User`, `Tourist`, `Location`, `Tour`, `Booking`. Остальные (`Manager`, `TourOperator`) и связанные с ними поля (`Tour.TourOperatorId`, `Booking.ManagerId`) будут добавлены следующими миграциями. Хэш пароля (`PasswordHash`) тоже добавится позже, вместе с аутентификацией.
 
-- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain` (папка `Entities/`). Идентификатор (`Id`, `ExternalId`, время создания и изменения) наследуется от базового класса `BaseEntity`.
-- Настройки каждой сущности вынесены в отдельный класс в папке `Data/Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
+- Сущности описаны классами `*Entity` в проекте `TravelAgency.Domain`. Идентификатор (`Guid Id`) наследуется от базового класса `BaseEntity`.
+- Настройки каждой сущности вынесены в отдельный класс в папке `Configurations/` проекта `TravelAgency.Infrastructure`, `TravelAgencyDbContext` их подключает.
 - Связь «многие ко многим» между туристом и туром раскрыта сущностью `Booking` с составным первичным ключом (`TouristId`, `TourId`).
 - Роль пользователя, статус бронирования и категория отеля — `enum`.
-- Пароль от БД в репозитории не хранится: в `appsettings.json` строка подключения без пароля, а пароль лежит в user secrets.
-- Миграция создаётся средствами EF Core и применяется при старте сервиса (`Database.Migrate()`) или командой `dotnet ef database update`.
+- Миграция создаётся средствами EF Core и применяется командой `dotnet ef database update`.
 
 ## Структура решения
 
+Решение состоит из трёх проектов, внутри каждого — свои папки:
+
 ```
-TravelAgency/
-├── TravelAgency.sln
-├── README.md
-├── docs/
-│   └── er-logical.png
-├── TravelAgency.Domain/                 проект: сущности
-│   ├── Entities/                        *Entity
-│   │   └── Base/                        IBaseEntity, BaseEntity
+TravelAgency.sln
+├── TravelAgency.Domain                  сущности
+│   ├── Entities/
+│   │   ├── Base/                        BaseEntity.
+│   │   └── ...Entity.cs                 User, Tourist, Location, Tour, Booking
 │   └── Enums/                           UserRoleEnum, BookingStatusEnum, HotelCategoryEnum
-├── TravelAgency.Infrastructure/         проект: БД
-│   └── Data/
-│       ├── TravelAgencyDbContext.cs
-│       ├── Configurations/              настройки сущностей
-│       └── Migrations/                  миграции EF Core
-└── TravelAgency.Web/                    проект: Web API
-    ├── Configuration/                   подключение БД и др.
+├── TravelAgency.Infrastructure          работа с БД
+│   ├── Data/
+│   │   ├── Configurations/              настройки сущностей
+│   │   └── TravelAgencyDbContext.cs
+│   └── Migrations/                      миграции EF Core
+└── TravelAgency.Web                     Web API
+    ├── Configuration/                   подключение БД
     ├── Properties/
     ├── appsettings.json
     └── Program.cs
 ```
 
-## Как запустить
+Зависимости проектов: `Web` → `Infrastructure` → `Domain`.
 
-1. Установить .NET 10 SDK и PostgreSQL, один раз поставить инструмент миграций:
-
-   ```
-   dotnet tool install --global dotnet-ef
-   ```
-
-2. Записать строку подключения с паролем в user secrets (из папки решения, в PowerShell):
-
-   ```
-   dotnet user-secrets set 'ConnectionStrings:TravelAgencyDbContext' 'Host=localhost;Port=5432;Database=travel_agency;Username=postgres;Password=ВАШ_ПАРОЛЬ' --project TravelAgency.Web
-   ```
-
-3. Создать миграцию:
-
-   ```
-   dotnet ef migrations add InitialCreate --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
-   ```
-
-4. Применить миграцию. Либо командой:
-
-   ```
-   dotnet ef database update --project TravelAgency.Infrastructure --startup-project TravelAgency.Web -- --environment Development
-   ```
-
-   либо просто запустить `TravelAgency.Web` в режиме Development: при старте миграции применятся сами, и БД создастся, если её нет.
-
-После этого в PostgreSQL появятся таблицы `users`, `tourists`, `locations`, `tours`, `bookings` и служебная `__EFMigrationsHistory`.

@@ -19,7 +19,7 @@ public static class DbContextFactoryConfiguration
         using var scope = app.ApplicationServices.CreateScope();
         var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TravelAgencyDbContext>>();
         using var context = contextFactory.CreateDbContext();
-        context.Database.Migrate(); // применяет последние миграции и создаёт БД, если её нет
+        context.Database.Migrate(); 
 
         return app;
     }
